@@ -1,33 +1,37 @@
 # Dockerfile para Laravel en Render
 FROM php:8.2-fpm
 
-# Instala dependencias del sistema
+# 1. Instalar dependencias del sistema (incluido libpq-dev para Postgres)
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libpq-dev \
     zip \
     unzip \
     git \
-    curl
+    curl \
+    && docker-php-ext-install pdo_pgsql
 
-# Instala Composer
+# 2. Instalar Composer
 COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
 
-# Establece el directorio de trabajo
+# 3. Directorio de trabajo
 WORKDIR /var/www
 
-# Copia el código fuente
+# 4. Copiar el código fuente
 COPY . /var/www
 
-# Instala dependencias de PHP
+# 5. Instalar dependencias de PHP de Laravel
 RUN composer install --optimize-autoloader --no-dev
 
-# Da permisos a storage y bootstrap/cache
+# 6. Permisos para storage y cache
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Expone el puerto 8080
+# 7. Exponer puerto (Render usará la variable $PORT, pero dejamos 8080 por defecto)
 EXPOSE 8080
 
-# Comando de inicio
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
+# 8. Comando de inicio:
+#    - Corre migraciones en Neon
+#    - Luego levanta el servidor de Laravel
+CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
