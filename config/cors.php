@@ -22,12 +22,12 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => array_values(array_filter([
-        env('APP_URL'),
-        env('FRONTEND_URL'),
+    'allowed_origins' => [
+        'https://coralfeast.onrender.com',
+        'https://thecoralfeast.onrender.com',
         'http://127.0.0.1:5502',
         'http://localhost:5502',
-    ])),
+    ],
 
     'allowed_origins_patterns' => [],
 
